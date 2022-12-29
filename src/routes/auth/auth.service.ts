@@ -39,11 +39,6 @@ export class AuthService {
   }
 
   async register(payload: UserRegisterDto): Promise<void> {
-    const existingUser = await this.usersService.getUserByEmail(payload.email);
-    if (!!existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
-
     await this.usersService.createUser(payload);
 
     // TODO: uncomment after adding emailing feature

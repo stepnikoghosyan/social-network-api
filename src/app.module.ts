@@ -45,9 +45,6 @@ import { join } from 'path';
           configService.get<EnvConfig[EnvConfigEnum.NODE_ENV]>(EnvConfigEnum.NODE_ENV) === Environment.DEVELOPMENT,
       }),
     }),
-
-    AuthModule,
-    UsersModule,
     ServeStaticModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -65,6 +62,9 @@ import { join } from 'path';
         },
       ],
     }),
+
+    AuthModule,
+    UsersModule,
   ],
   providers: [
     JwtStrategy,

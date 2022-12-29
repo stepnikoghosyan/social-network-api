@@ -94,7 +94,7 @@ export class UsersService {
 
         return {
           ...userData,
-          profilePictureUrl: getProfilePictureUrl(this.configService, attachment.fileName),
+          profilePictureUrl: getProfilePictureUrl(this.configService, attachment?.fileName),
         };
       }),
     };

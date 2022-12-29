@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Attachment } from '@common/modules/attachments/attachment.entity';
 
-@Entity()
+@Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   @ApiProperty()
