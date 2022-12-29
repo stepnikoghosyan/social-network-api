@@ -67,7 +67,6 @@ export class UsersController {
   @Delete('/:id')
   @HttpCode(204)
   public delete(@Param('id') userID: number, @CurrentUser() currentUser: Partial<User>) {
-    // TODO: Add CurrentUser decorator so user can delete only his account
     return this.usersService.deleteUser(userID, currentUser.id);
   }
 }

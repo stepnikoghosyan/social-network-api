@@ -19,15 +19,14 @@ export class CreateUserDto {
   @ApiProperty()
   public lastName: string;
 
-  // TODO: uncomment
-  // @ApiProperty({
-  //   type: 'file',
-  //   properties: {
-  //     file: {
-  //       type: 'string',
-  //       format: 'binary',
-  //     },
-  //   },
-  // })
-  // profilePicture: any;
+  @ApiProperty({
+    type: 'file',
+    properties: {
+      file: {
+        type: 'string',
+        format: 'binary',
+      },
+    },
+  })
+  profilePicture: any;
 }

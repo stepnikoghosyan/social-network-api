@@ -65,21 +65,7 @@ export class UsersService {
     queryParams: UsersQueryParams,
     currentUserId: number,
   ): Promise<PaginationResponse<Omit<User, 'attachment'>>> {
-    // const options: FindAndCountOptions<Post['_attributes']> = {
-    //   ...this.getPaginationValues(queryParams),
-    //   include: {
-    //     model: Attachment,
-    //     attributes: ['fileName'],
-    //   },
-    //   attributes: {
-    //     exclude: ['profilePictureId', 'attachment', 'createdAt', 'updatedAt'],
-    //     include: [[Sequelize.col('fileName'), 'profilePictureUrl']],
-    //   },
-    // };
-
-    // TODO: Add profilePictureUrl calculated by profilePictureId
     // TODO: check if below query is working fine. should become: where id... AND (firstName like *** OR lastName like ***)
-
     const [results, count] = await this.usersRepository.findAndCount({
       ...normalizePaginationQueryParams(queryParams),
       ...(!!queryParams.excludeSelf && (queryParams.excludeSelf === 'true' || +queryParams.excludeSelf === 1)
