@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 // modules
+import { AuthModule } from './routes/auth/auth.module';
 import { UsersModule } from './routes/users/users.module';
 
 // passport
@@ -38,11 +39,12 @@ import { getEnvVarsValidationSchema } from './environments/validation-schema';
         entities: getEntitiesList(),
         synchronize: true, // TODO: remove after release
         logging:
-          configService.get<EnvConfig[EnvConfigEnum.ENV]>(EnvConfigEnum.ENV) === Environment.LOCAL ||
-          configService.get<EnvConfig[EnvConfigEnum.ENV]>(EnvConfigEnum.ENV) === Environment.DEVELOPMENT,
+          configService.get<EnvConfig[EnvConfigEnum.NODE_ENV]>(EnvConfigEnum.NODE_ENV) === Environment.LOCAL ||
+          configService.get<EnvConfig[EnvConfigEnum.NODE_ENV]>(EnvConfigEnum.NODE_ENV) === Environment.DEVELOPMENT,
       }),
     }),
 
+    AuthModule,
     UsersModule,
   ],
   providers: [

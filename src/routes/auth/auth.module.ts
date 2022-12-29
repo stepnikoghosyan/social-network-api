@@ -1,23 +1,24 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+// modules
+import { UsersModule } from '../users/users.module';
 
 // services
-import { UsersService } from './users.service';
+import { AuthService } from './auth.service';
 
 // controllers
-import { UsersController } from './users.controller';
-
-// entities
-import { User } from './user.entity';
+import { AuthController } from './auth.controller';
 
 // models
 import { EnvConfig, EnvConfigEnum } from '@common/models/env-config.model';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    UsersModule,
+    PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -29,16 +30,10 @@ import { EnvConfig, EnvConfigEnum } from '@common/models/env-config.model';
         },
       }),
     }),
-    // MulterModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: multerConfigFactory(MulterConfigType.profilePictures),
-    // }),
-    // AttachmentsModule,
+    // TokensModule,
     // MailModule,
   ],
-  providers: [UsersService],
-  controllers: [UsersController],
-  exports: [UsersService],
+  controllers: [AuthController],
+  providers: [AuthService],
 })
-export class UsersModule {}
+export class AuthModule {}

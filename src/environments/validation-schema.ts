@@ -6,7 +6,7 @@ import { Environment } from '@common/models/environment.model';
 
 export function getEnvVarsValidationSchema(): joi.ObjectSchema {
   return joi.object({
-    [EnvConfigEnum.ENV]: joi.string().valid(...Object.values(Environment)),
+    [EnvConfigEnum.NODE_ENV]: joi.string().valid(...Object.values(Environment)),
     [EnvConfigEnum.HOST]: joi.string().hostname().required(),
     [EnvConfigEnum.PORT]: joi.number().required(),
 
