@@ -42,11 +42,10 @@ export class UsersService {
   }
 
   async getUserByEmail(email: string, includePassword = false): Promise<User> {
-    let query = this.usersRepository.createQueryBuilder().addSelect('password').where('user.email = :email', { email });
+    let query = this.usersRepository.createQueryBuilder().where('user.email = :email', { email });
 
-    // TODO: check if this is working
     if (includePassword) {
-      query = query.addSelect('password');
+      query = query.addSelect('password', 'User_password'); // TODO: check if this is the correct way
     }
 
     const user = await query.getOne();
