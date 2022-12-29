@@ -17,6 +17,13 @@ async function bootstrap() {
   // Validation
   app.useGlobalPipes(new ValidationPipe());
 
+  // app.useStaticAssets(
+  //   join(process.cwd(), configService.get<EnvConfig[EnvConfigEnum.ROOT_STORAGE_PATH]>(EnvConfigEnum.ROOT_STORAGE_PATH)),
+  //   {
+  //     prefix: '/public/',
+  //   },
+  // );
+
   // Swagger
   const config = new DocumentBuilder().setTitle('Social Network API').setVersion('1.0').addBearerAuth().build();
   const document = SwaggerModule.createDocument(app, config);

@@ -17,6 +17,8 @@ import { Environment } from '@common/models/environment.model';
 // utils
 import { getEntitiesList } from './utils/entities-list.util';
 import { getEnvVarsValidationSchema } from './environments/validation-schema';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -46,6 +48,23 @@ import { getEnvVarsValidationSchema } from './environments/validation-schema';
 
     AuthModule,
     UsersModule,
+    ServeStaticModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => [
+        {
+          rootPath: join(
+            process.cwd(),
+            configService.get<EnvConfig[EnvConfigEnum.ROOT_STORAGE_PATH]>(EnvConfigEnum.ROOT_STORAGE_PATH),
+          ),
+          serveRoot:
+            '/' +
+            configService.get<EnvConfig[EnvConfigEnum.ROOT_PUBLIC_STORAGE_PATH]>(
+              EnvConfigEnum.ROOT_PUBLIC_STORAGE_PATH,
+            ),
+        },
+      ],
+    }),
   ],
   providers: [
     JwtStrategy,

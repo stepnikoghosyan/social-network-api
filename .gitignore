@@ -33,3 +33,7 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Storage files (profile pictures, blog pictures, etc.)
+/storage*
+/storage

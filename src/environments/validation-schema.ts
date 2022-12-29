@@ -7,6 +7,7 @@ import { Environment } from '@common/models/environment.model';
 export function getEnvVarsValidationSchema(): joi.ObjectSchema {
   return joi.object({
     [EnvConfigEnum.NODE_ENV]: joi.string().valid(...Object.values(Environment)),
+    [EnvConfigEnum.DOMAIN]: joi.string().required(),
     [EnvConfigEnum.HOST]: joi.string().hostname().required(),
     [EnvConfigEnum.PORT]: joi.number().required(),
 
@@ -24,10 +25,10 @@ export function getEnvVarsValidationSchema(): joi.ObjectSchema {
     [EnvConfigEnum.HASH_SALT_ROUNDS]: joi.number().required(),
 
     // TODO: delete later if not needed
-    // [EnvConfigEnum.ROOT_STORAGE_PATH]: string().required(),
-    // [EnvConfigEnum.ROOT_PUBLIC_STORAGE_PATH]: string().required(),
-    // [EnvConfigEnum.IMAGES_PATH]: string().required(),
-    // [EnvConfigEnum.PROFILE_PICTURES_IMAGES_PATH]: string().required(),
+    [EnvConfigEnum.ROOT_STORAGE_PATH]: joi.string().required(),
+    [EnvConfigEnum.ROOT_PUBLIC_STORAGE_PATH]: joi.string().required(),
+    [EnvConfigEnum.IMAGES_PATH]: joi.string().required(),
+    [EnvConfigEnum.PROFILE_PICTURES_IMAGES_PATH]: joi.string().required(),
     // [EnvConfigEnum.POSTS_IMAGES_PATH]: string().required(),
     //
     // [EnvConfigEnum.SENDGRID_API_KEY]: string().required(),

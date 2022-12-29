@@ -10,6 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import { Like, Not, Repository } from 'typeorm';
 import { hash } from 'bcrypt';
 
+// services
+import { AttachmentsService } from '@common/modules/attachments/attachments.service';
+
 // entity
 import { User } from './user.entity';
 
@@ -24,15 +27,17 @@ import { EnvConfigEnum } from '@common/models/env-config.model';
 
 // utils
 import { normalizePaginationQueryParams } from '@common/utils/normalize-pagination-query-params.util';
+import { getProfilePictureUrl } from './utils/profile-picture-url.util';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    private readonly attachmentsService: AttachmentsService,
     private readonly configService: ConfigService,
   ) {}
 
-  async getUserByID(id: string): Promise<User> {
+  async getUserByID(id: number): Promise<User> {
     const data = await this.usersRepository.findOneBy({ id });
     if (!data) {
       throw new NotFoundException();
@@ -56,7 +61,10 @@ export class UsersService {
     return user;
   }
 
-  async getUsersList(queryParams: UsersQueryParams, currentUserId: string): Promise<PaginationResponse<User>> {
+  async getUsersList(
+    queryParams: UsersQueryParams,
+    currentUserId: number,
+  ): Promise<PaginationResponse<Omit<User, 'attachment'>>> {
     // const options: FindAndCountOptions<Post['_attributes']> = {
     //   ...this.getPaginationValues(queryParams),
     //   include: {
@@ -87,11 +95,22 @@ export class UsersService {
             ],
           }
         : null),
+      relations: {
+        attachment: true,
+      },
     });
 
+    // TODO: Review this, there should be a better way
     return {
       count,
-      results,
+      results: results.map((user) => {
+        const { attachment, ...userData } = user;
+
+        return {
+          ...userData,
+          profilePictureUrl: getProfilePictureUrl(this.configService, attachment.fileName),
+        };
+      }),
     };
   }
 
@@ -114,19 +133,13 @@ export class UsersService {
     });
 
     // TODO: review this, there should be a better approach
-    const plainObj = JSON.parse(JSON.stringify(result));
-    const { password, ...userData } = plainObj;
+    const { password, ...userData } = result;
 
     return userData;
   }
 
-  // TODO: add file upload
   // TODO: change return type from void to newly updated data
-  async updateUser(
-    id: string,
-    payload: UpdateUserDto,
-    // file?: Express.Multer.File,
-  ): Promise<void> {
+  async updateUser(id: number, payload: UpdateUserDto, file?: Express.Multer.File): Promise<void> {
     const user = await this.getUserByID(id);
     if (!user.activatedAt) {
       throw new ForbiddenException('Account is not activated');
@@ -136,29 +149,30 @@ export class UsersService {
       firstName: payload.firstName || user.firstName,
       lastName: payload.lastName || user.lastName,
       email: payload.email || user.email,
+      activatedAt: user.activatedAt,
     };
 
     if (!!payload.password) {
       dataForUpdate.password = await hash(payload.password, +this.configService.get(EnvConfigEnum.HASH_SALT_ROUNDS));
     }
 
-    // if (!!file) {
-    //   const attachment = await this.attachmentsService.createOrUpdate(
-    //     this.profilePicturesPathInStorage,
-    //     user.profilePictureId,
-    //     file.filename,
-    //   );
-    //   if (!!attachment) {
-    //     dataForUpdate.profilePictureId = attachment.id;
-    //   }
-    // } else if (!payload.profilePicture && !!user.profilePictureId) {
-    //   // TODO: Add check in IF statement to make sure url in payload is same as current profile picture in db
-    //   // Delete profile picture
-    //   await this.attachmentsService.deleteByID(user.profilePictureId);
-    //   dataForUpdate.profilePictureId = null;
-    // }
+    if (!!file) {
+      const attachment = await this.attachmentsService.createOrUpdate(
+        this.profilePicturesPathInStorage,
+        user.attachment?.id,
+        file.filename,
+      );
+      if (!!attachment) {
+        dataForUpdate.attachment = attachment;
+      }
+    } else if (!payload.profilePicture && !!user.attachment.id) {
+      // TODO: Add check in IF statement to make sure url in payload is same as current profile picture in db
+      // Delete profile picture
+      await this.attachmentsService.deleteByID(user.attachment.id);
+      dataForUpdate.attachment = null;
+    }
 
-    if (payload.email !== dataForUpdate.email) {
+    if (!!payload.email && payload.email !== dataForUpdate.email) {
       dataForUpdate.activatedAt = null;
       await this.usersRepository.update(user.id, dataForUpdate);
 
@@ -179,7 +193,7 @@ export class UsersService {
     }
   }
 
-  async activateUserAccount(userID: string): Promise<void> {
+  async activateUserAccount(userID: number): Promise<void> {
     // Check if user exists
     await this.getUserByID(userID);
 
@@ -199,7 +213,11 @@ export class UsersService {
     await this.usersRepository.update(userID, { password: hashedPassword });
   }
 
-  async deleteUser(userID: string): Promise<void> {
+  async deleteUser(userID: number, currentUserId: number): Promise<void> {
+    if (userID !== currentUserId) {
+      throw new ForbiddenException();
+    }
+
     const user = await this.getUserByID(userID);
     if (!user) {
       throw new NotFoundException('User with given id not found');
@@ -212,12 +230,12 @@ export class UsersService {
     await this.usersRepository.delete(userID);
   }
 
-  // private get profilePicturesPathInStorage(): string {
-  //   const names = [
-  //     ConfigEnum.ROOT_STORAGE_PATH,
-  //     ConfigEnum.IMAGES_PATH,
-  //     ConfigEnum.PROFILE_PICTURES_IMAGES_PATH,
-  //   ];
-  //   return names.map((item) => this.configService.get(item)).join('/');
-  // }
+  private get profilePicturesPathInStorage(): string {
+    const names = [
+      EnvConfigEnum.ROOT_STORAGE_PATH,
+      EnvConfigEnum.IMAGES_PATH,
+      EnvConfigEnum.PROFILE_PICTURES_IMAGES_PATH,
+    ];
+    return names.map((item) => this.configService.get(item)).join('/');
+  }
 }

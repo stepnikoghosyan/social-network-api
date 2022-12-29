@@ -1,12 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { ApiProperty } from '@nestjs/swagger';
+
+import { Attachment } from '@common/modules/attachments/attachment.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   @ApiProperty()
-  id: string;
+  id: number;
 
   @Column({
     type: 'varchar',
@@ -25,15 +27,9 @@ export class User {
   @ApiProperty()
   lastName: string;
 
-  // TODO: implement
-  // @Column({ nullable: true })
-  // @ForeignKey(() => Attachment)
-  // @ApiProperty()
-  // profilePictureId: number;
-
-  // TODO: check with TypeORM and implement
-  // @BelongsTo(() => Attachment)
-  // attachment: Attachment;
+  @OneToOne(() => Attachment)
+  @JoinColumn()
+  attachment: Attachment;
 
   @Column({ default: null, type: 'datetime', nullable: true })
   @ApiProperty()
@@ -42,4 +38,6 @@ export class User {
   @Column({ nullable: false, select: false })
   @ApiProperty()
   password: string;
+
+  profilePictureUrl?: string;
 }

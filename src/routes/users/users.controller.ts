@@ -1,5 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Put,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 // services
 import { UsersService } from './users.service';
@@ -36,26 +48,26 @@ export class UsersController {
   }
 
   @Get('/:id')
-  getByID(@Param('id') userID: string) {
+  getByID(@Param('id') userID: number) {
     return this.usersService.getUserByID(userID);
   }
 
   @Put('')
   @HttpCode(204)
   @ApiConsumes('multipart/form-data')
-  // @UseInterceptors(FileInterceptor('profilePicture'))
+  @UseInterceptors(FileInterceptor('profilePicture'))
   public updateUser(
     @CurrentUser() currentUser: Partial<User>,
     @Body() payload: UpdateUserDto,
-    // @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.usersService.updateUser(currentUser.id, payload /*, file*/);
+    return this.usersService.updateUser(currentUser.id, payload, file);
   }
 
   @Delete('/:id')
   @HttpCode(204)
-  public delete(@Param('id') userID: string) {
+  public delete(@Param('id') userID: number, @CurrentUser() currentUser: Partial<User>) {
     // TODO: Add CurrentUser decorator so user can delete only his account
-    return this.usersService.deleteUser(userID);
+    return this.usersService.deleteUser(userID, currentUser.id);
   }
 }

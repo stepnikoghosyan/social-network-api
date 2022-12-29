@@ -27,17 +27,16 @@ export class UpdateUserDto {
   @ApiPropertyOptional()
   public lastName: string;
 
-  // TODO: uncomment
-  // @IsOptional()
-  // @IsNotEmpty()
-  // @ApiPropertyOptional({
-  //   type: 'file',
-  //   properties: {
-  //     file: {
-  //       type: 'string',
-  //       format: 'binary',
-  //     },
-  //   },
-  // })
-  // profilePicture: any;
+  @IsOptional()
+  @IsNotEmpty()
+  @ApiPropertyOptional({
+    type: 'file',
+    properties: {
+      file: {
+        type: 'string',
+        format: 'binary',
+      },
+    },
+  })
+  profilePicture: any;
 }

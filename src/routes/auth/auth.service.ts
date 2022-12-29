@@ -219,7 +219,7 @@ export class AuthService {
       throw new UnauthorizedException('Unauthorized. refreshToken is required');
     }
 
-    let decoded: { id: string };
+    let decoded: { id: number };
 
     try {
       decoded = await this.jwtService.verify(payload.refreshToken);
@@ -246,7 +246,7 @@ export class AuthService {
     }
   }
 
-  private async generateTokens(userID: string): Promise<{ accessToken: string; refreshToken: string }> {
+  private async generateTokens(userID: number): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = {
       id: userID,
     };

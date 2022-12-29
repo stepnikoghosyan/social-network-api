@@ -3,6 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 
+// modules
+import { AttachmentsModule } from '@common/modules/attachments/attachments.module';
+
 // services
 import { UsersService } from './users.service';
 
@@ -14,6 +17,11 @@ import { User } from './user.entity';
 
 // models
 import { EnvConfig, EnvConfigEnum } from '@common/models/env-config.model';
+import { MulterModule } from '@nestjs/platform-express';
+import { MulterConfigType } from '@common/models/multer-config-type.model';
+
+// utils
+import { multerConfigFactory } from '@common/utils/multer-config-factory.util';
 
 @Module({
   imports: [
@@ -29,12 +37,12 @@ import { EnvConfig, EnvConfigEnum } from '@common/models/env-config.model';
         },
       }),
     }),
-    // MulterModule.registerAsync({
-    //   imports: [ConfigModule],
-    //   inject: [ConfigService],
-    //   useFactory: multerConfigFactory(MulterConfigType.profilePictures),
-    // }),
-    // AttachmentsModule,
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: multerConfigFactory(MulterConfigType.profilePictures),
+    }),
+    AttachmentsModule,
     // MailModule,
   ],
   providers: [UsersService],
