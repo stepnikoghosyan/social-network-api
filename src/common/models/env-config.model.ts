@@ -1,4 +1,7 @@
+import { Environment } from '@common/models/environment.model';
+
 export interface EnvConfig {
+  [EnvConfigEnum.ENV]: Environment;
   [EnvConfigEnum.HOST]: string;
   [EnvConfigEnum.PORT]: number;
 
@@ -17,6 +20,7 @@ export interface EnvConfig {
 }
 
 export enum EnvConfigEnum {
+  ENV = 'ENV',
   HOST = 'HOST',
   PORT = 'PORT',
 

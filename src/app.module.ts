@@ -2,16 +2,19 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-// services
-import { AppService } from './app.service';
+// modules
+import { UsersModule } from './routes/users/users.module';
 
-// controllers
-import { AppController } from './app.controller';
+// passport
+import { JwtStrategy } from './routes/auth/passport-strategies/jwt.strategy';
+import { JwtAuthGuard } from '@common/guards/jwt-auth-guard.service';
 
 // models
-import { EnvConfig, EnvConfigEnum } from './common/interfaces/env-config.model';
+import { EnvConfig, EnvConfigEnum } from '@common/models/env-config.model';
+import { Environment } from '@common/models/environment.model';
 
-// configs
+// utils
+import { getEntitiesList } from './utils/entities-list.util';
 import { getEnvVarsValidationSchema } from './environments/validation-schema';
 
 @Module({
@@ -32,11 +35,22 @@ import { getEnvVarsValidationSchema } from './environments/validation-schema';
         username: configService.get<EnvConfig[EnvConfigEnum.DATABASE_USERNAME]>(EnvConfigEnum.DATABASE_USERNAME),
         password: configService.get<EnvConfig[EnvConfigEnum.DATABASE_PASSWORD]>(EnvConfigEnum.DATABASE_PASSWORD),
         database: configService.get<EnvConfig[EnvConfigEnum.DATABASE_NAME]>(EnvConfigEnum.DATABASE_NAME),
+        entities: getEntitiesList(),
         synchronize: true, // TODO: remove after release
+        logging:
+          configService.get<EnvConfig[EnvConfigEnum.ENV]>(EnvConfigEnum.ENV) === Environment.LOCAL ||
+          configService.get<EnvConfig[EnvConfigEnum.ENV]>(EnvConfigEnum.ENV) === Environment.DEVELOPMENT,
       }),
     }),
+
+    UsersModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    JwtStrategy,
+    {
+      provide: 'APP_GUARD',
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

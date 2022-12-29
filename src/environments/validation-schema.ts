@@ -1,11 +1,12 @@
 import * as joi from 'joi';
 
 // models
-import { EnvConfigEnum } from '../common/interfaces/env-config.model';
+import { EnvConfigEnum } from '@common/models/env-config.model';
+import { Environment } from '@common/models/environment.model';
 
 export function getEnvVarsValidationSchema(): joi.ObjectSchema {
   return joi.object({
-    NODE_ENV: joi.string().valid('local', 'development'),
+    [EnvConfigEnum.ENV]: joi.string().valid(...Object.values(Environment)),
     [EnvConfigEnum.HOST]: joi.string().hostname().required(),
     [EnvConfigEnum.PORT]: joi.number().required(),
 
