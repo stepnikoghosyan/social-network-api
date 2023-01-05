@@ -37,20 +37,33 @@ export class UsersService {
     private readonly configService: ConfigService,
   ) {}
 
-  async getUserByID(id: number): Promise<User> {
-    const data = await this.usersRepository.findOneBy({ id });
-    if (!data) {
+  async getUserByID(id: number, options?: { includeActivatedAt?: boolean }): Promise<User> {
+    let query = this.usersRepository.createQueryBuilder().where('user.id = :id', { id });
+
+    if (options?.includeActivatedAt) {
+      query = query.addSelect('activatedAt', 'User_ActivatedAt'); // TODO: check if this is the correct way
+    }
+
+    const user = await query.getOne();
+    if (!user) {
       throw new NotFoundException();
     }
 
-    return data;
+    return user;
   }
 
-  async getUserByEmail(email: string, includePassword = false): Promise<User> {
+  async getUserByEmail(
+    email: string,
+    options?: { includePassword?: boolean; includeActivatedAt?: boolean },
+  ): Promise<User> {
     let query = this.usersRepository.createQueryBuilder().where('user.email = :email', { email });
 
-    if (includePassword) {
+    if (options?.includePassword) {
       query = query.addSelect('password', 'User_password'); // TODO: check if this is the correct way
+    }
+
+    if (options?.includeActivatedAt) {
+      query = query.addSelect('activatedAt', 'User_activatedAt'); // TODO: check if this is the correct way
     }
 
     const user = await query.getOne();
@@ -83,6 +96,7 @@ export class UsersService {
         : null),
       relations: {
         attachment: true,
+        rooms: true,
       },
     });
 
@@ -126,7 +140,7 @@ export class UsersService {
 
   // TODO: change return type from void to newly updated data
   async updateUser(id: number, payload: UpdateUserDto, file?: Express.Multer.File): Promise<void> {
-    const user = await this.getUserByID(id);
+    const user = await this.getUserByID(id, { includeActivatedAt: true });
     if (!user.activatedAt) {
       throw new ForbiddenException('Account is not activated');
     }

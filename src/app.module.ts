@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServeStaticModule } from '@nestjs/serve-static';
+
+import { join } from 'path';
 
 // modules
 import { AuthModule } from './routes/auth/auth.module';
 import { UsersModule } from './routes/users/users.module';
+import { RoomsModule } from './routes/rooms/rooms.module';
 
 // passport
 import { JwtStrategy } from './routes/auth/passport-strategies/jwt.strategy';
@@ -17,8 +21,6 @@ import { Environment } from '@common/models/environment.model';
 // utils
 import { getEntitiesList } from './utils/entities-list.util';
 import { getEnvVarsValidationSchema } from './environments/validation-schema';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 @Module({
   imports: [
@@ -65,6 +67,7 @@ import { join } from 'path';
 
     AuthModule,
     UsersModule,
+    RoomsModule,
   ],
   providers: [
     JwtStrategy,

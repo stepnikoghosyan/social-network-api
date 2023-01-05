@@ -24,7 +24,10 @@ export class AuthService {
   ) {}
 
   async login(payload: UserLoginDto): Promise<{ accessToken: string; refreshToken: string }> {
-    const user = await this.usersService.getUserByEmail(payload.email, true);
+    const user = await this.usersService.getUserByEmail(payload.email, {
+      includePassword: true,
+      includeActivatedAt: true,
+    });
     if (!user || !(await compare(payload.password, user.password))) {
       throw new UnauthorizedException('Invalid email or password');
     }

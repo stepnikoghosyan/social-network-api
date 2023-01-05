@@ -1,8 +1,9 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Attachment } from '@common/modules/attachments/attachment.entity';
+import { Room } from '../rooms/room.entity';
 
 @Entity('users')
 export class User {
@@ -31,7 +32,7 @@ export class User {
   @JoinColumn()
   attachment: Attachment;
 
-  @Column({ default: null, type: 'datetime', nullable: true })
+  @Column({ default: null, type: 'datetime', nullable: true, select: false })
   @ApiProperty()
   activatedAt: Date;
 
@@ -40,4 +41,7 @@ export class User {
   password: string;
 
   profilePictureUrl?: string;
+
+  @ManyToMany(() => Room, (room) => room.users)
+  rooms: Room[];
 }
