@@ -1,7 +1,9 @@
-import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 
+// entities
 import { User } from '../users/user.entity';
+import { Message } from '../messages/messages.entity';
 
 @Entity('rooms')
 export class Room {
@@ -15,10 +17,6 @@ export class Room {
     nullable: false,
   })
   name: string;
-
-  // TODO: implement after having Messages feature
-  // @Column()
-  // lastMessage: Message;
 
   @Column({
     type: 'boolean',
@@ -43,4 +41,8 @@ export class Room {
     },
   })
   users: User[];
+
+  @OneToOne(() => Message)
+  @JoinColumn()
+  lastMessage: Message | null;
 }

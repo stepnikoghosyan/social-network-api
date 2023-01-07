@@ -10,10 +10,8 @@ export class RoomDto {
   isPrivate: boolean;
 
   @ApiPropertyOptional({
-    type: 'array',
-    items: {
-      type: 'number',
-    },
+    type: Number,
+    isArray: true,
   })
   users?: number[];
 }

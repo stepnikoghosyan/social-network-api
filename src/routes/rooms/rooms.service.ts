@@ -1,11 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Room } from './room.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+
+// entities
+import { Room } from './room.entity';
+import { User } from '../users/user.entity';
+import { Message } from '../messages/messages.entity';
+
+// dto
+import { RoomDto } from './dto/room.dto';
+
+// models
 import { PaginationQueryParams } from '@common/models/pagination-query-params.model';
 import { PaginationResponse } from '@common/models/pagination-response.model';
-import { RoomDto } from './dto/room.dto';
-import { User } from '../users/user.entity';
+
+// utils
 import { normalizePaginationQueryParams } from '@common/utils/normalize-pagination-query-params.util';
 
 @Injectable()
@@ -31,7 +40,16 @@ export class RoomsService {
       throw new NotFoundException();
     }
 
-    return this.roomsRepository.findOne({ where: { id }, relations: { users: true } });
+    return this.roomsRepository.findOne({
+      where: { id },
+      relations: {
+        users: true,
+        lastMessage: {
+          author: true,
+          room: true,
+        },
+      },
+    });
   }
 
   async getRoomsList(queryParams: PaginationQueryParams, userId: number): Promise<PaginationResponse<Room>> {
@@ -49,6 +67,13 @@ export class RoomsService {
       },
     });
 
+    if (!userRooms || !userRooms.length) {
+      return {
+        count: 0,
+        results: [],
+      };
+    }
+
     // Get all rooms where user is involved AND all users of that group
     const [results, count] = await this.roomsRepository.findAndCount({
       ...normalizePaginationQueryParams(queryParams),
@@ -57,6 +82,10 @@ export class RoomsService {
       },
       relations: {
         users: true,
+        lastMessage: {
+          author: true,
+          room: true,
+        },
       },
     });
 
@@ -84,5 +113,14 @@ export class RoomsService {
       users: roomUsers,
       updatedAt: new Date(),
     });
+  }
+
+  async updateLastMessage(data: { roomId: number; messageId: number; userId: number }): Promise<void> {
+    const room = await this.getRoomById(data.roomId, data.userId);
+
+    const message = new Message();
+    message.id = data.messageId;
+
+    await this.roomsRepository.update(room.id, { lastMessage: { id: data.messageId } });
   }
 }

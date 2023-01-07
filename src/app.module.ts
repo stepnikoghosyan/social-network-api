@@ -9,6 +9,7 @@ import { join } from 'path';
 import { AuthModule } from './routes/auth/auth.module';
 import { UsersModule } from './routes/users/users.module';
 import { RoomsModule } from './routes/rooms/rooms.module';
+import { MessagesModule } from './routes/messages/messages.module';
 
 // passport
 import { JwtStrategy } from './routes/auth/passport-strategies/jwt.strategy';
@@ -68,6 +69,7 @@ import { getEnvVarsValidationSchema } from './environments/validation-schema';
     AuthModule,
     UsersModule,
     RoomsModule,
+    MessagesModule,
   ],
   providers: [
     JwtStrategy,
