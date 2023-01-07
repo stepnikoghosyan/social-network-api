@@ -1,5 +1,4 @@
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
 
 // entities
 import { User } from '../users/user.entity';
@@ -8,7 +7,6 @@ import { Message } from '../messages/messages.entity';
 @Entity('rooms')
 export class Room {
   @PrimaryGeneratedColumn()
-  @ApiProperty()
   id: number;
 
   @Column({
@@ -25,7 +23,6 @@ export class Room {
   isPrivate: boolean;
 
   @Column({ default: null, type: 'datetime', nullable: false }) // TODO: default value should be new Date()
-  @ApiProperty()
   updatedAt: Date;
 
   @ManyToMany(() => User, (user) => user.rooms)
