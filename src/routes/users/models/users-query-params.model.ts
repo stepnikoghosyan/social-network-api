@@ -2,5 +2,4 @@ import { PaginationQueryParams } from '@common/models/pagination-query-params.mo
 
 export interface UsersQueryParams extends PaginationQueryParams {
   excludeSelf?: boolean | string | number;
-  search?: string;
 }

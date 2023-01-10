@@ -17,6 +17,7 @@ import { ManageFriendshipDto } from './dto/manage-friendship.dto';
 import { FriendshipQueryParams } from './models/friendship-query-params.model';
 import { FriendshipStatus } from './models/friend-status.model';
 import { FriendshipAction } from './models/friendship-action.model';
+import { PaginationQueryParams } from '@common/models/pagination-query-params.model';
 
 @ApiTags('friends')
 @ApiBearerAuth()
@@ -28,9 +29,9 @@ export class FriendsController {
   @ApiQuery({ name: 'page', type: Number, required: false })
   @ApiQuery({ name: 'pageSize', type: Number, required: false })
   @ApiQuery({ name: 'showAll', type: Boolean, required: false })
-  getPendingFriendRequests(@Query() queryParams: FriendshipQueryParams, @CurrentUser() currentUser: Partial<User>) {
+  getPendingFriendRequests(@Query() queryParams: PaginationQueryParams, @CurrentUser() currentUser: Partial<User>) {
     return this.friendshipService.getFriendshipList(
-      { ...queryParams, statuses: [FriendshipStatus.PENDING] },
+      { ...queryParams, statuses: [FriendshipStatus.PENDING] } as FriendshipQueryParams,
       currentUser.id,
     );
   }
@@ -39,9 +40,9 @@ export class FriendsController {
   @ApiQuery({ name: 'page', type: Number, required: false })
   @ApiQuery({ name: 'pageSize', type: Number, required: false })
   @ApiQuery({ name: 'showAll', type: Boolean, required: false })
-  getFriendsList(@Query() queryParams: FriendshipQueryParams, @CurrentUser() currentUser: Partial<User>) {
+  getFriendsList(@Query() queryParams: PaginationQueryParams, @CurrentUser() currentUser: Partial<User>) {
     return this.friendshipService.getFriendshipList(
-      { ...queryParams, statuses: [FriendshipStatus.ACCEPTED] },
+      { ...queryParams, statuses: [FriendshipStatus.ACCEPTED] } as FriendshipQueryParams,
       currentUser.id,
     );
   }
@@ -50,9 +51,9 @@ export class FriendsController {
   @ApiQuery({ name: 'page', type: Number, required: false })
   @ApiQuery({ name: 'pageSize', type: Number, required: false })
   @ApiQuery({ name: 'showAll', type: Boolean, required: false })
-  get(@Query() queryParams: FriendshipQueryParams, @CurrentUser() currentUser: Partial<User>) {
+  getBlockedUsers(@Query() queryParams: PaginationQueryParams, @CurrentUser() currentUser: Partial<User>) {
     return this.friendshipService.getFriendshipList(
-      { ...queryParams, statuses: [FriendshipStatus.BLOCKED] },
+      { ...queryParams, statuses: [FriendshipStatus.BLOCKED] } as FriendshipQueryParams,
       currentUser.id,
     );
   }

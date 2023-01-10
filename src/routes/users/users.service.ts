@@ -3,11 +3,11 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Like, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { hash } from 'bcrypt';
 
 // services
@@ -26,8 +26,9 @@ import { PaginationResponse } from '@common/models/pagination-response.model';
 import { EnvConfigEnum } from '@common/models/env-config.model';
 
 // utils
-import { normalizePaginationQueryParams } from '@common/utils/normalize-pagination-query-params.util';
 import { getProfilePictureUrl } from './utils/profile-picture-url.util';
+import { normalizePaginationQueryParams } from '@common/utils/normalize-pagination-query-params.util';
+import { coerceBooleanParam } from '@common/utils/coerce-boolean-param.util';
 
 @Injectable()
 export class UsersService {
@@ -78,27 +79,28 @@ export class UsersService {
     queryParams: UsersQueryParams,
     currentUserId: number,
   ): Promise<PaginationResponse<Omit<User, 'attachment'>>> {
-    // TODO: check if below query is working fine. should become: where id... AND (firstName like *** OR lastName like ***)
-    const [results, count] = await this.usersRepository.findAndCount({
-      ...normalizePaginationQueryParams(queryParams),
-      ...(!!queryParams.excludeSelf && (queryParams.excludeSelf === 'true' || +queryParams.excludeSelf === 1)
-        ? {
-            id: Not(currentUserId),
-          }
-        : null),
-      ...(queryParams.search?.trim()
-        ? {
-            where: [
-              { firstName: Like(`%${queryParams.search.trim().toLocaleLowerCase()}%`) },
-              { lastName: Like(`%${queryParams.search.trim().toLocaleLowerCase()}%`) },
-            ],
-          }
-        : null),
-      relations: {
-        attachment: true,
-        rooms: true,
-      },
-    });
+    const paginationParams = normalizePaginationQueryParams(queryParams);
+
+    const query = this.usersRepository
+      .createQueryBuilder('user')
+      .skip(paginationParams.skip)
+      .take(paginationParams.take)
+      .leftJoinAndSelect('user.rooms', 'rooms')
+      .leftJoin('user.attachment', 'attachment');
+
+    // Exclude self (current user)
+    if (coerceBooleanParam(queryParams.excludeSelf)) {
+      query.where('user.id != :id', { id: currentUserId });
+    }
+
+    // Search by full name
+    if (queryParams.search?.trim()) {
+      query.andWhere(`CONCAT( user.firstName, ' ', user.lastName ) LIKE :search`, {
+        search: `%${queryParams.search.trim().toLocaleLowerCase()}%`,
+      });
+    }
+
+    const [results, count] = await query.getManyAndCount();
 
     // TODO: Review this, there should be a better way
     return {
