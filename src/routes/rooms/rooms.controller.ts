@@ -36,7 +36,7 @@ export class RoomsController {
   }
 
   @Post('')
-  public register(@Body() payload: RoomDto, @CurrentUser() currentUser: Partial<User>) {
+  public createRoom(@Body() payload: RoomDto, @CurrentUser() currentUser: Partial<User>) {
     return this.roomsService.createRoom(payload, currentUser.id);
   }
 }

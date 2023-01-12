@@ -42,6 +42,9 @@ export class MessagesService {
         },
       },
       ...normalizePaginationQueryParams(queryParams),
+      order: {
+        createdAt: 'DESC',
+      },
       relations: {
         author: true,
         room: true,

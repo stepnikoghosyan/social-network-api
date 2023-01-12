@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 
 // entities
 import { Room } from './room.entity';
@@ -79,6 +79,7 @@ export class RoomsService {
       ...normalizePaginationQueryParams(queryParams),
       where: {
         id: In([userRooms.map((item) => item.id)]),
+        ...(!!queryParams.search ? { name: Like(`%${queryParams.search.trim().toLocaleLowerCase()}%`) } : null),
       },
       relations: {
         users: true,

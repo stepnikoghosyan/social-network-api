@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { In, Repository } from 'typeorm';
 
 // services
-import { UsersService } from '../users/users.service';
+import { normalizeUser, UsersService } from '../users/users.service';
 
 // entities
 import { Friend } from './friend.entity';
@@ -25,6 +26,7 @@ export class FriendsService {
   constructor(
     @InjectRepository(Friend) private readonly friendsRepository: Repository<Friend>,
     private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   async getFriendshipById(id: number) {
@@ -37,7 +39,6 @@ export class FriendsService {
   }
 
   async getFriendshipList(queryParams: FriendshipQueryParams, currentUserId: number) {
-    // TODO: attachment should be selected for users, but also renamed to profilePictureUrl
     return await this.friendsRepository
       .findAndCount({
         where: [
@@ -51,7 +52,10 @@ export class FriendsService {
           lastActionUser: true,
         },
       })
-      .then(([results, count]) => ({ count, results }));
+      .then(([results, count]) => ({
+        count,
+        results: normalizeFriendshipList(currentUserId, this.configService, results),
+      }));
   }
 
   // Send Friend Request
@@ -130,4 +134,21 @@ export class FriendsService {
 
     await this.friendsRepository.delete(id);
   }
+}
+
+function normalizeFriendshipList(
+  currentUserId: number,
+  configService: ConfigService,
+  friendshipList: Friend[],
+): Array<Omit<Friend, 'user'>> {
+  return friendshipList.map((friendship) => ({
+    id: friendship.id,
+    friend: normalizeUser(
+      friendship.friend.id === currentUserId ? friendship.user : friendship.friend,
+      configService,
+    ) as any,
+    lastActionUser: normalizeUser(friendship.lastActionUser, configService) as any,
+    actionType: friendship.actionType,
+    friendshipStatus: friendship.friendshipStatus,
+  }));
 }

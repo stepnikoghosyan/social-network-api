@@ -3,7 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -75,10 +75,11 @@ export class UsersService {
     return user;
   }
 
+  // TODO: remove 'setFullName' from Omit
   async getUsersList(
     queryParams: UsersQueryParams,
     currentUserId: number,
-  ): Promise<PaginationResponse<Omit<User, 'attachment'>>> {
+  ): Promise<PaginationResponse<Omit<User, 'attachment' | 'setFullName'>>> {
     const paginationParams = normalizePaginationQueryParams(queryParams);
 
     const query = this.usersRepository
@@ -105,14 +106,7 @@ export class UsersService {
     // TODO: Review this, there should be a better way
     return {
       count,
-      results: results.map((user) => {
-        const { attachment, ...userData } = user;
-
-        return {
-          ...userData,
-          profilePictureUrl: getProfilePictureUrl(this.configService, attachment?.fileName),
-        };
-      }),
+      results: results.map((user) => normalizeUser(user, this.configService)),
     };
   }
 
@@ -240,4 +234,14 @@ export class UsersService {
     ];
     return names.map((item) => this.configService.get(item)).join('/');
   }
+}
+
+// TODO: remove 'setFullName' from Omit
+export function normalizeUser(user: User, configService: ConfigService): Omit<User, 'attachment' | 'setFullName'> {
+  const { attachment, ...userData } = user;
+
+  return {
+    ...userData,
+    profilePictureUrl: getProfilePictureUrl(configService, attachment?.fileName),
+  };
 }

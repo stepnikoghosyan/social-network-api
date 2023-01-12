@@ -37,4 +37,6 @@ export class User {
 
   @ManyToMany(() => Room, (room) => room.users)
   rooms: Room[];
+
+  // TODO: add fullName calculated property
 }
